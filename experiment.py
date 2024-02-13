@@ -1,15 +1,16 @@
 from psychopy import core, event, visual, monitors
 import os, random, datetime, pathlib, itertools
 
-PRESENTATION_TIME = 3 # in seconds
-AMOUNT_TARGETS = 5 # targets to remember
+PRESENTATION_TIME = 4 # in seconds
+AMOUNT_TARGETS = 6 # targets to remember
 TRIALS_PER_BLOCK = 25 # amount of trials within each block
+LOGFILE_PATH = os.path.join(pathlib.Path(__file__).parent.absolute(), "results.csv")
 
 class Experiment:
     def __init__(self):
         with open("fruits.txt", "r") as file:
             self.wordbank = file.read().splitlines()
-        self.numberbank = [str(i) for i in range(10, 100)]
+        self.numberbank = [str(i) for i in range(10, 100) if i % 10]
         self.combinations = [f"{word}{' ' * (20 - len(word) - 2)}{number}" for word, number in itertools.product(self.wordbank, self.numberbank)]
 
         self.rand = random.Random()
@@ -61,7 +62,9 @@ class Experiment:
 
     def present_targets(self):
         self.set_background_color("grey")
-        self.set_instruction_text("\n\n".join(self.targets))
+        target_delimiter = "\n\n"
+        # target_delimiter = f"\n{'—' * 20}\n"
+        self.set_instruction_text(target_delimiter.join(self.targets))
         self.window.flip()
         core.wait(PRESENTATION_TIME)
 
@@ -108,7 +111,10 @@ class Experiment:
         core.wait(2)
 
     def log_result(self, block, trial, response_time, target_response, response):
-        with open(os.path.join(pathlib.Path(__file__).parent.absolute(), "results.csv"), "a") as file:
+        if not os.path.isfile(LOGFILE_PATH):
+            with open(LOGFILE_PATH, "w") as file:
+                file.write("timestamp,block,trial,response_time,target_response,response")
+        with open(LOGFILE_PATH, "a") as file:
             file.write(f"\n{datetime.datetime.now()},{block},{trial},{response_time},{target_response},{response}")
 
 if __name__ == "__main__":
