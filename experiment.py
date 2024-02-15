@@ -1,10 +1,11 @@
 from psychopy import core, event, visual, monitors
-import os, random, datetime, pathlib, itertools
+import random, datetime, pathlib, itertools
 
-PRESENTATION_TIME = 5 # time during which targets are shown (NOTE: pair-condition gets double) in seconds
+PRESENTATION_TIME_SINGLE = 5 # time during which single element targets are shown, in seconds
+PRESENTATION_TIME_PAIR = 10 # time during which pair targets are shown, in seconds
 AMOUNT_TARGETS = 3 # amount targets to remember
 TRIALS_PER_BLOCK = 25 # amount of trials within each block
-LOGFILE_PATH = os.path.join(pathlib.Path(__file__).parent.absolute(), "results.csv")
+LOGFILE_PATH = pathlib.Path(__file__).parent.absolute().joinpath("results.csv")
 
 class Experiment:
     def __init__(self):
@@ -95,7 +96,7 @@ class Experiment:
         self.selected_items = self.rand.sample(items, TRIALS_PER_BLOCK - AMOUNT_TARGETS) + self.targets
         self.rand.shuffle(self.selected_items)
 
-        self.present_targets(PRESENTATION_TIME * 2 if stage == "pair" else PRESENTATION_TIME)
+        self.present_targets(PRESENTATION_TIME_PAIR if stage == "pair" else PRESENTATION_TIME_SINGLE)
 
         for trial, item in enumerate(self.selected_items, start=1):
             self.present_trial(
@@ -111,7 +112,7 @@ class Experiment:
         core.wait(2)
 
     def log_result(self, block, trial, response_time, target_response, response):
-        if not os.path.isfile(LOGFILE_PATH):
+        if not LOGFILE_PATH.is_file():
             with open(LOGFILE_PATH, "w") as file:
                 file.write("timestamp,block,trial,response_time,target_response,response")
         with open(LOGFILE_PATH, "a") as file:
